@@ -89,7 +89,7 @@ RUN cd /app/document-processor && \
 # Create placeholder database files from .placeholderdb files in /storage.
 USER root
 COPY ./backend/storage/job_queue.placeholderdb ./backend/storage/job_queue.db
-COPY ./backend/storage/vdbms.placeholderdb ./backend/storage/vdbms.db
+# COPY ./backend/storage/vdbms.placeholderdb ./backend/storage/vdbms.db
 RUN chown -R anythingllm:anythingllm ./backend/storage ./document-processor
 USER anythingllm
 
