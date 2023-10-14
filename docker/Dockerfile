@@ -32,8 +32,8 @@ RUN groupadd -g $ARG_GID anythingllm && \
     mkdir -p /app/frontend/ /app/backend/ /app/workers/ /app/document-processor/ && chown -R anythingllm:anythingllm /app
 
 # Copy docker helper scripts
-COPY ../docker/docker-entrypoint.sh /usr/local/bin/
-COPY ../docker/docker-healthcheck.sh /usr/local/bin/
+COPY ./docker/docker-entrypoint.sh /usr/local/bin/
+COPY ./docker/docker-healthcheck.sh /usr/local/bin/
 
 # Ensure the scripts are executable
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
@@ -45,28 +45,28 @@ WORKDIR /app
 
 # Install frontend dependencies
 FROM base as frontend-deps
-COPY ../frontend/package.json ./frontend/yarn.lock ./frontend/
+COPY ./frontend/package.json ./frontend/yarn.lock ./frontend/
 RUN cd ./frontend/ && yarn install && yarn cache clean
 
 # Install server dependencies
 FROM base as server-deps
-COPY ../backend/package.json ./backend/yarn.lock ./backend/
+COPY ./backend/package.json ./backend/yarn.lock ./backend/
 RUN cd ./backend/ && yarn install --production && yarn cache clean 
 
 # Build the frontend
 FROM frontend-deps as build-stage
-COPY ../frontend/ ./frontend/
+COPY ./frontend/ ./frontend/
 RUN cd ./frontend/ && yarn build && yarn cache clean
 
 # Setup the server
 FROM server-deps as production-stage
-COPY ../backend/ ./backend/ 
+COPY ./backend/ ./backend/ 
 
 # Copy built static frontend files to the server public directory
 COPY --from=build-stage /app/frontend/dist ./backend/public
 
 # Copy worker source files 
-COPY ../workers/ ./workers/
+COPY ./workers/ ./workers/
 USER root
 RUN chown -R anythingllm:anythingllm ./workers
 USER anythingllm
@@ -78,7 +78,7 @@ RUN cd /app/workers && \
     yarn add global inngest-cli
 
 # # Copy the document-processor
-COPY ../document-processor/ ./document-processor/
+COPY ./document-processor/ ./document-processor/
 
 # # Install document-processor dependencies
 RUN cd /app/document-processor && \
@@ -88,8 +88,8 @@ RUN cd /app/document-processor && \
 
 # Create placeholder database files from .placeholderdb files in /storage.
 USER root
-# COPY ../backend/storage/job_queue.placeholderdb ./backend/storage/job_queue.db
-# COPY ../backend/storage/vdbms.placeholderdb ./backend/storage/vdbms.db
+COPY ./backend/storage/job_queue.placeholderdb ./backend/storage/job_queue.db
+COPY ./backend/storage/vdbms.placeholderdb ./backend/storage/vdbms.db
 RUN chown -R anythingllm:anythingllm ./backend/storage ./document-processor
 USER anythingllm
 
